@@ -327,7 +327,7 @@ var layerControl = L.control.groupedLayers(baseLayers, groupedOverlays, {
 $("#searchbox").click(function () {
   $(this).select();
 });
-
+var featureList
 /* Typeahead search functionality */
 $(document).one("ajaxStop", function () {
   $("#loading").hide();
