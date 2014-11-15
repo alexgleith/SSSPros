@@ -3,6 +3,7 @@
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
                                                                                 
 "features": [
-{ "type": "Feature", "properties": { "id": 0, "Name": "Test", "Type": "Gold Sustaining Partner", "Descriptio": "A Test Company", "LogoImage": "sssitas_logo.png", "IconImage": "sssitas_logo.png" }, "geometry": { "type": "Point", "coordinates": [ 146.645890906929509, -42.157690947511639 ] } }
+{ "type": "Feature", "properties": { "id": 0, "Name": "Test", "Type": "Gold Sustaining Partner", "Descriptio": "A Test Company", "LogoImage": "sssitas_logo.png", "IconImage": "sssitas_logo.png", "Website": "http:\/\/maps.gcc.tas.gov.au" }, "geometry": { "type": "Point", "coordinates": [ 146.645890906929509, -42.157690947511639 ] } },
+{ "type": "Feature", "properties": { "id": 1, "Name": "The Beach", "Type": "Sandy partner", "Descriptio": "Lovely sand, water, crabs", "LogoImage": "sssitas_logo.pmg", "IconImage": "sssitas_logo.pmg", "Website": "http:\/\/google.com" }, "geometry": { "type": "Point", "coordinates": [ 148.169536934116564, -42.053941499294737 ] } }
 ]
 }
