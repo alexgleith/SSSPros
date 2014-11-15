@@ -171,15 +171,20 @@ var museums = L.geoJson(null, {
           }));
         }
       });
-      $("#feature-list tbody").append('<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
-      museumSearch.push({
+
+      var textforrow = '<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>'
+      console.log(textforrow)
+      $("#feature-list tbody").append(textforrow);
+      var featureObj = {
         name: layer.feature.properties.Name,
         address: layer.feature.properties.Address,
         source: "Museums",
         id: L.stamp(layer),
         lat: layer.feature.geometry.coordinates[1],
         lng: layer.feature.geometry.coordinates[0]
-      });
+      };
+      console.log(featureObj)
+      museumSearch.push(featureObj);
     }
   }
 });
@@ -193,6 +198,8 @@ url.push('&key=AIzaSyCmnbiEvpRCR0TziQLKSb6QbyHFH1Jn9kg');
 url.push('&callback=?');
 
 url.join('')
+
+var mus, the
 
 $.getJSON(url.join(''), function (data) {
   var allFeatures = []
@@ -211,9 +218,20 @@ $.getJSON(url.join(''), function (data) {
       }
     };
     allFeatures.push(geojsonFeature)
-  }  
-  museums.addData(allFeatures);
+  }
+  var featuresCollection = { 
+    "type": "FeatureCollection",
+    "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+    "features": allFeatures
+  }
+  mus = featuresCollection
+  museums.addData(featuresCollection);
   map.addLayer(museumLayer);
+});
+
+$.getJSON("data/suspartners.geojson", function (data) {
+  the = data
+  museums.addData(data)
 });
 
 map = L.map("map", {
