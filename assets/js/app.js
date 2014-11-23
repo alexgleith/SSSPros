@@ -174,7 +174,6 @@ var spatialFolks = L.geoJson(null, {
       });
 
       var textforrow = '<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/spatialfolk.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>'
-      console.log(textforrow)
       $("#feature-list tbody").append(textforrow);
       var featureObj = {
         name: layer.feature.properties.Name,
@@ -349,8 +348,6 @@ var runAtEnd = function() {
   $("#loading").hide();
   featureList = new List("features", {valueNames: ["feature-name"]});
   featureList.sort("feature-name", {order:"asc"});
-  console.log(spatialFolkSearch)
-  console.log(susPartnerSearch)
   var spatialfolksBH = new Bloodhound({
     name: "spatialFolks",
     datumTokenizer: function (d) {
