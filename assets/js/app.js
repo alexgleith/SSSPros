@@ -1,4 +1,4 @@
-var map, featureList, theaterSearch = [], museumSearch = [];
+var map, featureList, spatialFolkSearch = [], susPartnerSearch = [];
 
 $(document).on("click", ".feature-row", function(e) {
   sidebarClick(parseInt($(this).attr("id"), 10));
@@ -51,7 +51,7 @@ $("#sidebar-hide-btn").click(function() {
 });
 
 function sidebarClick(id) {
-  map.addLayer(susPartnersLayer).addLayer(museumLayer);
+  map.addLayer(susPartnersLayer).addLayer(spatialFolksLayer);
   var layer = markerClusters.getLayer(id);
   map.setView([layer.getLatLng().lat, layer.getLatLng().lng], 16);
   layer.fire("click");
@@ -92,13 +92,13 @@ var markerClusters = new L.MarkerClusterGroup({
   disableClusteringAtZoom: 16
 });
 
-/* Empty layer placeholder to add to layer control for listening when to add/remove theaters to markerClusters layer */
+/* Empty layer placeholder to add to layer control for listening when to add/remove spatialfolks to markerClusters layer */
 var susPartnersLayer = L.geoJson(null);
 var susPartners = L.geoJson(null, {
   pointToLayer: function (feature, latlng) {
     return L.marker(latlng, {
       icon: L.icon({
-        iconUrl: "assets/img/theater.png",
+        iconUrl: "assets/img/suspartner.png",
         iconSize: [24, 28],
         iconAnchor: [12, 28],
         popupAnchor: [0, -25]
@@ -123,11 +123,11 @@ var susPartners = L.geoJson(null, {
           }));
         }
       });
-      $("#feature-list tbody").append('<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/theater.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
-      theaterSearch.push({
+      $("#feature-list tbody").append('<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/suspartner.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
+      susPartnerSearch.push({
         name: layer.feature.properties.Name,
         type: layer.feature.properties.Type,
-        source: "Theaters",
+        source: "susPartners",
         id: L.stamp(layer),
         lat: layer.feature.geometry.coordinates[1],
         lng: layer.feature.geometry.coordinates[0]
@@ -135,18 +135,19 @@ var susPartners = L.geoJson(null, {
     }
   }
 });
+
 $.getJSON("data/suspartners.geojson", function (data) {
   susPartners.addData(data);
   map.addLayer(susPartnersLayer);
 });
 
-/* Empty layer placeholder to add to layer control for listening when to add/remove museums to markerClusters layer */
-var museumLayer = L.geoJson(null);
-var museums = L.geoJson(null, {
+/* Empty layer placeholder to add to layer control for listening when to add/remove suspartners to markerClusters layer */
+var spatialFolksLayer = L.geoJson(null);
+var spatialFolks = L.geoJson(null, {
   pointToLayer: function (feature, latlng) {
     return L.marker(latlng, {
       icon: L.icon({
-        iconUrl: "assets/img/museum.png",
+        iconUrl: "assets/img/spatialfolk.png",
         iconSize: [24, 28],
         iconAnchor: [12, 28],
         popupAnchor: [0, -25]
@@ -172,19 +173,18 @@ var museums = L.geoJson(null, {
         }
       });
 
-      var textforrow = '<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/museum.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>'
+      var textforrow = '<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/spatialfolk.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>'
       console.log(textforrow)
       $("#feature-list tbody").append(textforrow);
       var featureObj = {
         name: layer.feature.properties.Name,
         address: layer.feature.properties.Address,
-        source: "Museums",
+        source: "spatialFolks",
         id: L.stamp(layer),
         lat: layer.feature.geometry.coordinates[1],
         lng: layer.feature.geometry.coordinates[0]
       };
-      console.log(featureObj)
-      museumSearch.push(featureObj);
+      spatialFolkSearch.push(featureObj);
     }
   }
 });
@@ -197,41 +197,40 @@ url.push('?sql=' + encodedQuery);
 url.push('&key=AIzaSyCmnbiEvpRCR0TziQLKSb6QbyHFH1Jn9kg');
 url.push('&callback=?');
 
-url.join('')
+//global for the featurelist
+var featureList
+$.ajax({
+  url: url.join(''),
+  dataType: 'jsonp',
+  success: function (data) {
+    var allFeatures = []
+    for (i = 0; i < data.rows.length; i++) { 
+      var geojsonFeature = {
+        "type": "Feature",
+        "properties": {
+            'Name': data.rows[i][1],
+            'Address': data.rows[i][2],
+            'Description': data.rows[i][3],
+            'Link': data.rows[i][4]
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [parseFloat(data.rows[i][5].split(',')[1]), parseFloat(data.rows[i][5].split(',')[0])]
+        }
+      };
+      allFeatures.push(geojsonFeature)
+    }
+    var featuresCollection = { 
+      "type": "FeatureCollection",
+      "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+      "features": allFeatures
+    }
+    spatialFolks.addData(featuresCollection);
+    map.addLayer(spatialFolksLayer);
 
-var mus, the
-
-$.getJSON(url.join(''), function (data) {
-  var allFeatures = []
-  for (i = 0; i < data.rows.length; i++) { 
-    var geojsonFeature = {
-      "type": "Feature",
-      "properties": {
-          'Name': data.rows[i][1],
-          'Address': data.rows[i][2],
-          'Description': data.rows[i][3],
-          'Link': data.rows[i][4]
-      },
-      "geometry": {
-          "type": "Point",
-          "coordinates": [parseFloat(data.rows[i][5].split(',')[1]), parseFloat(data.rows[i][5].split(',')[0])]
-      }
-    };
-    allFeatures.push(geojsonFeature)
+    //Oops, a ridiculous hack - CAREFUL!
+    runAtEnd()
   }
-  var featuresCollection = { 
-    "type": "FeatureCollection",
-    "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-    "features": allFeatures
-  }
-  mus = featuresCollection
-  museums.addData(featuresCollection);
-  map.addLayer(museumLayer);
-});
-
-$.getJSON("data/suspartners.geojson", function (data) {
-  the = data
-  museums.addData(data)
 });
 
 map = L.map("map", {
@@ -247,8 +246,8 @@ map.on("overlayadd", function(e) {
   if (e.layer === susPartnersLayer) {
     markerClusters.addLayer(susPartners);
   }
-  if (e.layer === museumLayer) {
-    markerClusters.addLayer(museums);
+  if (e.layer === spatialFolksLayer) {
+    markerClusters.addLayer(spatialFolks);
   }
 });
 
@@ -256,8 +255,8 @@ map.on("overlayremove", function(e) {
   if (e.layer === susPartnersLayer) {
     markerClusters.removeLayer(susPartners);
   }
-  if (e.layer === museumLayer) {
-    markerClusters.removeLayer(museums);
+  if (e.layer === spatialFolksLayer) {
+    markerClusters.removeLayer(spatialFolks);
   }
 });
 
@@ -332,8 +331,8 @@ if (document.body.clientWidth <= 767) {
 
 var groupedOverlays = {
   "Points of Interest": {
-    "<img src='assets/img/theater.png' width='24' height='28'>&nbsp;Theaters": susPartnersLayer,
-    "<img src='assets/img/museum.png' width='24' height='28'>&nbsp;Museums": museumLayer
+    "<img src='assets/img/spatialfolk.png' width='24' height='28'>&nbsp;Spatial Professionals": spatialFolksLayer,
+    "<img src='assets/img/suspartner.png' width='24' height='28'>&nbsp;Sustaining Partners": susPartnersLayer
   }
 };
 
@@ -345,35 +344,35 @@ var layerControl = L.control.groupedLayers(baseLayers, groupedOverlays, {
 $("#searchbox").click(function () {
   $(this).select();
 });
-var featureList
 /* Typeahead search functionality */
-$(document).one("ajaxStop", function () {
+var runAtEnd = function() {
   $("#loading").hide();
   featureList = new List("features", {valueNames: ["feature-name"]});
   featureList.sort("feature-name", {order:"asc"});
-
-  var theatersBH = new Bloodhound({
-    name: "Sustaining Partners",
+  console.log(spatialFolkSearch)
+  console.log(susPartnerSearch)
+  var spatialfolksBH = new Bloodhound({
+    name: "spatialFolks",
     datumTokenizer: function (d) {
       return Bloodhound.tokenizers.whitespace(d.name);
     },
     queryTokenizer: Bloodhound.tokenizers.whitespace,
-    local: theaterSearch,
+    local: spatialFolkSearch,
     limit: 10
   });
 
-  var museumsBH = new Bloodhound({
-    name: "Museums",
+  var suspartnersBH = new Bloodhound({
+    name: "susPartners",
     datumTokenizer: function (d) {
       return Bloodhound.tokenizers.whitespace(d.name);
     },
     queryTokenizer: Bloodhound.tokenizers.whitespace,
-    local: museumSearch,
+    local: susPartnerSearch,
     limit: 10
   });
 
-  theatersBH.initialize();
-  museumsBH.initialize();
+  spatialfolksBH.initialize();
+  suspartnersBH.initialize();
 
   /* instantiate the typeahead UI */
   $("#searchbox").typeahead({
@@ -381,34 +380,34 @@ $(document).one("ajaxStop", function () {
     highlight: true,
     hint: false
   }, {
-    name: "susPartners",
+    name: "spatialFolks",
     displayKey: "name",
-    source: theatersBH.ttAdapter(),
+    source: spatialfolksBH.ttAdapter(),
     templates: {
-      header: "<h4 class='typeahead-header'><img src='assets/img/theater.png' width='24' height='28'>&nbsp;Sustaining Partners</h4>",
+      header: "<h4 class='typeahead-header'><img src='assets/img/spatialfolk.png' width='24' height='28'>&nbsp;Spatial People</h4>",
       suggestion: Handlebars.compile(["{{name}}<br>&nbsp;<small>{{address}}</small>"].join(""))
     }
   }, {
-    name: "Museums",
+    name: "susPartners",
     displayKey: "name",
-    source: museumsBH.ttAdapter(),
+    source: suspartnersBH.ttAdapter(),
     templates: {
-      header: "<h4 class='typeahead-header'><img src='assets/img/museum.png' width='24' height='28'>&nbsp;Museums</h4>",
-      suggestion: Handlebars.compile(["{{name}}<br>&nbsp;<small>{{address}}</small>"].join(""))
+      header: "<h4 class='typeahead-header'><img src='assets/img/suspartner.png' width='24' height='28'>&nbsp;Sustaining Partners</h4>",
+      suggestion: Handlebars.compile(["{{name}}<br>&nbsp;<small>{{type}}</small>"].join(""))
     }
   }).on("typeahead:selected", function (obj, datum) {
-    if (datum.source === "Theaters") {
-      if (!map.hasLayer(susPartnersLayer)) {
-        map.addLayer(susPartnersLayer);
+    if (datum.source === "spatialFolks") {
+      if (!map.hasLayer(spatialFolksLayer)) {
+        map.addLayer(spatialFolksLayer);
       }
       map.setView([datum.lat, datum.lng], 16);
       if (map._layers[datum.id]) {
         map._layers[datum.id].fire("click");
       }
     }
-    if (datum.source === "Museums") {
-      if (!map.hasLayer(museumLayer)) {
-        map.addLayer(museumLayer);
+    if (datum.source === "susPartners") {
+      if (!map.hasLayer(susPartnersLayer)) {
+        map.addLayer(susPartnersLayer);
       }
       map.setView([datum.lat, datum.lng], 16);
       if (map._layers[datum.id]) {
@@ -427,4 +426,4 @@ $(document).one("ajaxStop", function () {
   });
   $(".twitter-typeahead").css("position", "static");
   $(".twitter-typeahead").css("display", "block");
-});
+}
