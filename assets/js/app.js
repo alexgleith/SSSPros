@@ -1,5 +1,8 @@
 var map, featureList, spatialFolkSearch = [], susPartnerSearch = [];
 
+var mapStartCoords = [-42.0288, 146.7828];
+var mapStartZoom = 7;
+
 $(document).on("click", ".feature-row", function(e) {
   sidebarClick(parseInt($(this).attr("id"), 10));
 });
@@ -12,18 +15,7 @@ $("#about-btn").click(function() {
 
 $("#full-extent-btn").click(function() {
   //map.fitBounds(boroughs.getBounds());
-  $(".navbar-collapse.in").collapse("hide");
-  return false;
-});
-
-$("#legend-btn").click(function() {
-  $("#legendModal").modal("show");
-  $(".navbar-collapse.in").collapse("hide");
-  return false;
-});
-
-$("#login-btn").click(function() {
-  $("#loginModal").modal("show");
+  map.setView(mapStartCoords, mapStartZoom)
   $(".navbar-collapse.in").collapse("hide");
   return false;
 });
@@ -50,6 +42,24 @@ $("#sidebar-hide-btn").click(function() {
   map.invalidateSize();
 });
 
+$(function(){
+  $('#submitform').click(function()
+  {
+      console.log('triggered send mail')
+      var email = $("#email").val(); // get email field value
+      var firstname = $("#firstname").val(); // get name field value
+      var lastname = $("#lastname").val(); // get name field value
+      var msg = $("#msg").val(); // get message field value
+      sendMail(email, firstname + ' ' + lastname, msg);
+      $('#aboutModal').modal('hide');
+      $("#email").val('');
+      $("#firstname").val('');
+      $("#lastname").val('');
+      $("#msg").val('');
+      return false; // prevent page refresh
+  });
+});
+
 function sidebarClick(id) {
   map.addLayer(susPartnersLayer).addLayer(spatialFolksLayer);
   var layer = markerClusters.getLayer(id);
@@ -60,6 +70,28 @@ function sidebarClick(id) {
     $("#sidebar").hide();
     map.invalidateSize();
   }
+}
+
+function sendMail(fromEmail, fromName, message) {
+  var m = new mandrill.Mandrill('U4CqG61u1EvbqlWA4NNTjQ');
+
+  var params = {
+    "message": {
+        "from_email": fromEmail,
+        'from_name': fromName,
+        "to":[{"email":"alexgleith@gmail.com"}],
+        "subject": 'SSSI Spatial Folks Form Submission',
+        "text": message
+    }
+  };
+
+  m.messages.send(params, function(res) {
+        console.log(res);
+        alert('Message sent, thanks for the feedback!')
+    }, function(err) {
+        console.log(err);
+        alert('Message failed, please contact us via email...')
+    });
 }
 
 //Define base layers
@@ -174,7 +206,6 @@ var spatialFolks = L.geoJson(null, {
       });
 
       var textforrow = '<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/spatialfolk.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>'
-      console.log(textforrow)
       $("#feature-list tbody").append(textforrow);
       var featureObj = {
         name: layer.feature.properties.Name,
@@ -234,8 +265,8 @@ $.ajax({
 });
 
 map = L.map("map", {
-  zoom: 7,
-  center: [-42.0288, 146.7828],
+  zoom: mapStartZoom,
+  center: mapStartCoords,
   layers: [LISTTopographic, markerClusters, highlight],
   zoomControl: false,
   attributionControl: false
@@ -272,7 +303,9 @@ function updateAttribution(e) {
       $("#attribution").html((layer.getAttribution()));
     }
   });
+  $("#attribution").append(('<br>Data &copy; SSSI, <a href="https://creativecommons.org/licenses/by/3.0/au/deed.en">CC-BY</a>')); 
 }
+
 map.on("layeradd", updateAttribution);
 map.on("layerremove", updateAttribution);
 
@@ -281,7 +314,7 @@ var attributionControl = L.control({
 });
 attributionControl.onAdd = function (map) {
   var div = L.DomUtil.create("div", "leaflet-control-attribution");
-  div.innerHTML = "<span class='hidden-xs'>Developed by <a href='http://bryanmcbride.com'>bryanmcbride.com</a> | </span><a href='#' onclick='$(\"#attributionModal\").modal(\"show\"); return false;'>Attribution</a>";
+  div.innerHTML = "<span class='hidden-xs'>Dev by <a href='http://agl.pw'>agl</a> based on <a href='https://github.com/bmcbride/bootleaf'>Bootleaf</a> | </span><a href='#' onclick='$(\"#attributionModal\").modal(\"show\"); return false;'>Attribution</a>";
   return div;
 };
 map.addControl(attributionControl);
@@ -349,8 +382,6 @@ var runAtEnd = function() {
   $("#loading").hide();
   featureList = new List("features", {valueNames: ["feature-name"]});
   featureList.sort("feature-name", {order:"asc"});
-  console.log(spatialFolkSearch)
-  console.log(susPartnerSearch)
   var spatialfolksBH = new Bloodhound({
     name: "spatialFolks",
     datumTokenizer: function (d) {
