@@ -63,7 +63,13 @@ $(function(){
 function sidebarClick(id) {
   map.addLayer(susPartnersLayer).addLayer(spatialFolksLayer);
   var layer = markerClusters.getLayer(id);
-  map.setView([layer.getLatLng().lat, layer.getLatLng().lng], 16);
+  lat = layer.feature.geometry.coordinates[0][1]
+  lng = layer.feature.geometry.coordinates[0][0]
+  if(lat===undefined) {
+    lat = layer.feature.geometry.coordinates[1]
+    lng = layer.feature.geometry.coordinates[0]
+  }
+  map.setView([lat, lng], 16);
   layer.fire("click");
   /* Hide sidebar and go to the map on small screens */
   if (document.body.clientWidth <= 767) {
@@ -141,13 +147,19 @@ var susPartners = L.geoJson(null, {
   },
   onEachFeature: function (feature, layer) {
     if (feature.properties) {
-      var content = "<table class='table table-striped table-bordered table-condensed'>" + "<tr><th>Name</th><td>" + feature.properties.Name + "</td></tr>" + "<tr><th>Type</th><td>" + feature.properties.Type + "</td></tr>" + "<tr><th>Description</th><td>" + feature.properties.Descriptio + "</td></tr>" + "<tr><th>Website</th><td><a class='url-break' href='" + feature.properties.Website + "' target='_blank'>" + feature.properties.Website + "</a></td></tr>" + "<table>";
+      var content = "<center><img src=\"images/"+feature.properties.LogoImage+"\" height='200'></center>"+
+      "<table class='table table-striped table-bordered table-condensed'>" + 
+      "<tr><th>Name</th><td>" + feature.properties.Name + 
+      "</td></tr>" + "<tr><th>Type</th><td>" + feature.properties.Type + "</td></tr>" + 
+      "<tr><th>Description</th><td>" + feature.properties.Descriptio + 
+      "</td></tr>" + "<tr><th>Website</th><td><a class='url-break' href='" + feature.properties.Website + 
+      "' target='_blank'>" + feature.properties.Website + "</a></td></tr>" + "<table>";
       layer.on({
         click: function (e) {
           $("#feature-title").html(feature.properties.Name);
           $("#feature-info").html(content);
           $("#featureModal").modal("show");
-          highlight.clearLayers().addLayer(L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
+          highlight.clearLayers().addLayer(L.circleMarker([feature.geometry.coordinates[0][1], feature.geometry.coordinates[0][0]], {
             stroke: false,
             fillColor: "#00FFFF",
             fillOpacity: 0.7,
@@ -156,14 +168,15 @@ var susPartners = L.geoJson(null, {
         }
       });
       $("#feature-list tbody").append('<tr class="feature-row" id="'+L.stamp(layer)+'"><td style="vertical-align: middle;"><img width="16" height="18" src="assets/img/suspartner.png"></td><td class="feature-name">'+layer.feature.properties.Name+'</td><td style="vertical-align: middle;"><i class="fa fa-chevron-right pull-right"></i></td></tr>');
-      susPartnerSearch.push({
+      var featureObj = {
         name: layer.feature.properties.Name,
-        type: layer.feature.properties.Type,
+        address: layer.feature.properties.Type,
         source: "susPartners",
         id: L.stamp(layer),
-        lat: layer.feature.geometry.coordinates[1],
-        lng: layer.feature.geometry.coordinates[0]
-      });
+        lat: layer.feature.geometry.coordinates[0][1],
+        lng: layer.feature.geometry.coordinates[0][0]
+      };
+      susPartnerSearch.push(featureObj);
     }
   }
 });
@@ -260,7 +273,7 @@ $.ajax({
     map.addLayer(spatialFolksLayer);
 
     //Oops, a ridiculous hack - CAREFUL!
-    runAtEnd()
+    runAtEnd();
   }
 });
 
@@ -458,3 +471,4 @@ var runAtEnd = function() {
   $(".twitter-typeahead").css("position", "static");
   $(".twitter-typeahead").css("display", "block");
 }
+
