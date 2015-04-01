@@ -147,7 +147,7 @@ var susPartners = L.geoJson(null, {
   },
   onEachFeature: function (feature, layer) {
     if (feature.properties) {
-      var content = "<center><img src=\"images/"+feature.properties.LogoImage+"\" height='200'></center>"+
+      var content = "<center><img src=\"images/"+feature.properties.LogoImage+"\" height='"+feature.properties.Size+"'></center>"+
       "<table class='table table-striped table-bordered table-condensed'>" + 
       "<tr><th>Name</th><td>" + feature.properties.Name + 
       "</td></tr>" + "<tr><th>Type</th><td>" + feature.properties.Type + "</td></tr>" + 
